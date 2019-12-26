@@ -85,23 +85,28 @@ public boolean apply(DynamicContext context) {
 ```
 
 ## 2、Mybatis是否支持延迟加载？如果支持，它的实现原理是什么？
-支持：可以通过标签`fetchType="lazy"`来开启单个mapper的支持或者通过在配置文件中增加以下代码来开启
+支持：可以通过标签`fetchType="lazy"`来开启单个mapper的支持，
+或者通过在配置文件中增加以下代码来开启全局的延迟加载
 ```
 <!-- 打开延迟加载的开关 -->  
 <setting name="lazyLoadingEnabled" value="true" />  
 <!-- 将积极加载改为消息加载即按需加载 -->  
 <setting name="aggressiveLazyLoading" value="false"/> 
 ```
-Mybatis的延迟加载就是分多次执行SQL语句，这样就实现了延迟加载的机制，并且第一次执行的结果值可能是接下来执行的SQL语句的参数值，Mybatis实现执行接下来的SQL的原理机制是通过代理类来实现的，就是第一次执行的结果对象其实已经是一个代理对象，当执行接下来相关的对象时会执行其他SQL语句，这样就实现了延迟加载的机制。
+Mybatis的延迟加载就是分多次执行SQL语句，这样就实现了延迟加载的机制，
+并且第一次执行的结果值可能是接下来执行的SQL语句的参数值，
+Mybatis实现执行接下来的SQL的原理机制是通过代理类来实现的，
+就是第一次执行的结果对象其实已经是一个代理对象，当执行接下来相关的对象时会执行其他SQL语句，
+这样就实现了延迟加载的机制。
 
 
 ## 3、Mybatis都有哪些Executor执行器？它们之间的区别是什么？
 主要有：
 
-* BaseExecutor
+* BaseExecutor Executor的抽象实现类，实现了query，update等基础方法
 * BatchExecutor 执行update（没有select，JDBC批处理不支持select），将所有sql都添加到批处理中（addBatch()），等待统一执行（executeBatch()），它缓存了多个Statement对象，每个Statement对象都是addBatch()完毕后，等待逐一执行executeBatch()批处理。与JDBC批处理相同。
 * CachingExecutor
-* ClosedExecutor in ResultLoaderMap
+* ClosedExecutor in ResultLoaderMap已经关闭的Executor，对该执行器进行任何操作都会抛出异常
 * ReuseExecutor 执行update或select，以sql作为key查找Statement对象，存在就使用，不存在就创建，用完后，不关闭Statement对象，而是放置于Map内，供下一次使用。简言之，就是重复使用Statement对象。
 * SimpleExecutor 每执行一次update或select，就开启一个Statement对象，用完立刻关闭Statement对象。
 
@@ -111,10 +116,13 @@ Mybatis配置文件中，可以指定默认的ExecutorType执行器类型，也�
 ## 4、简述下Mybatis的一级、二级缓存（分别从存储结构、范围、失效场景。三个方面来作答）？
 
 1. 一级缓存：
-存储结构：HashMap（），作用范围sqlsession，失效场景：任何的 UPDATE, INSERT, DELETE 语句都会清空缓存，或者sqlsession主动调用了clearCache方法，在mapper.xml中的select标签中可以添加flushCache=“true”来强制刷新缓存。
+存储结构：HashMap（），作用范围sqlsession，
+失效场景：任何的 UPDATE, INSERT, DELETE 语句都会清空缓存，或者sqlsession主动调用了clearCache方法，在mapper.xml中的select标签中可以添加flushCache=“true”来强制刷新缓存。
 
 2. 二级缓存
-存储结构：默认实现的PerpetualCache中缓存的存储结构为HashMap，缓存的实体要实现序列化接口；作用范围：SqlSessionFactory的生命周期，所有由该SqlSessionFactory创建的SqlSession都共用一个缓存；失效场景：任意sqlSession进行了删除或更新操作。
+存储结构：默认实现的PerpetualCache中缓存的存储结构为HashMap，缓存的实体要实现序列化接口；
+作用范围：SqlSessionFactory的生命周期，所有由该SqlSessionFactory创建的SqlSession都共用一个缓存；
+失效场景：任意sqlSession进行了删除或更新操作。
 
 ## 5、简述Mybatis的插件运行原理，以及如何编写一个插件？
 ### 插件运行原理：
@@ -191,3 +199,6 @@ public class MyPlugin implements Interceptor {
 ```
 
 ## 请完善自定义持久层框架IPersistence，在现有代码基础上添加、修改及删除功能。
+作业详见https://gitee.com/chun1123/lg；其中Ipersisitence和Ipersistence_test
+为原有的持久化框架代码，在此基础上进行了阶段一作业的完善，实现了插入、修改、删除的功能。并在Ipersistence_test中进行了测试，
+注意，要进行验证需修改本地mysql的连接信息。
